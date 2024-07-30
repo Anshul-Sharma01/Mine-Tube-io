@@ -9,7 +9,7 @@ const userSchema = new Schema({
         required : true,
         unique : true,
         lowercase : true,
-        trime : true,
+        trim : true,
         index : true
     },
     email : {
@@ -50,7 +50,7 @@ const userSchema = new Schema({
 })
 
 
-userSchema.pre('save', async function( req, res, next ){
+userSchema.pre('save', async function( next ){
     if(!this.isModified("password")){
         return next();
     }
@@ -67,7 +67,7 @@ userSchema.methods.generateAccessToken = function(){
         {
             _id : this._id,
             email : this.email,
-            username : this._username
+            username : this.username
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
