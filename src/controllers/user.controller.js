@@ -75,7 +75,7 @@ const registerUser = asyncHandler( async ( req, res ) => {
     
 })
 
-const loginUser = asyncHandler( async ( req, res, next ) => {
+const loginUser = asyncHandler( async ( req, res ) => {
 
     const { email, username, password } = req.body;
 
@@ -122,7 +122,24 @@ const loginUser = asyncHandler( async ( req, res, next ) => {
 })
 
 const logoutUser = asyncHandler( async ( req, res ) => {
-    
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set : {
+                refreshToken : undefined
+            }
+        }
+    )
+    const options = {
+        httpOnly : true,
+        secure : true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User Logged Out"))
 })
 
 
