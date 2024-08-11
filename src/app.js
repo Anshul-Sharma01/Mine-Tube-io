@@ -19,11 +19,13 @@ app.use(express.static("public"));
 import userRoutes from './routes/user.routes.js';
 import serverCheckRoute from "./routes/servercheck.routes.js";
 import tweetRouter from "./routes/tweet.routes.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
 
 // routes declaration
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/server-check", serverCheckRoute);
 app.use("api/v1/tweets", tweetRouter);
+app.use("api/v1/dashboard", dashboardRouter);
 
 
 
