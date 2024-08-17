@@ -20,13 +20,14 @@ import userRoutes from './routes/user.routes.js';
 import serverCheckRoute from "./routes/servercheck.routes.js";
 import tweetRouter from "./routes/tweet.routes.js";
 import dashboardRouter from "./routes/dashboard.routes.js";
+import videoRouter from "./routes/video.routes.js";
 
 // routes declaration
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/server-check", serverCheckRoute);
 app.use("api/v1/tweets", tweetRouter);
 app.use("api/v1/dashboard", dashboardRouter);
-
+app.use("api/v1/videos", videoRouter);
 
 
 export { app };
