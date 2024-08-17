@@ -7,8 +7,33 @@ import { Video } from "../models/video.model.js";
 
 
 const getAllVideos = asyncHandler( async(req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType} = req.query;
-    const userId = req.user; 
+    const { page = 1, limit = 10 } = req.query;
+
+    try{
+        const videos = await Video.find()
+                                    .skip((page - 1) * limit)
+                                    .limit(Number(limit))
+                                    .exec();
+
+
+        const totalVideos = await Video.countDocuments();
+        const totalPages = Math.ceil(totalVideos / limit);
+
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(200, {
+                videos,
+                currentPage : page,
+                totalPages,
+                totalVideos
+            }, "Videos fetched successfully")
+        );
+    
+    }catch(err){
+        throw new ApiError(500, "Something went wrong while fetching all videos");
+    }
+
 })
 
 const publishAVideo = asyncHandler(async(req, res) => {
