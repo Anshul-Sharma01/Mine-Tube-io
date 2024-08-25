@@ -11,9 +11,9 @@ const getAllVideos = asyncHandler( async(req, res) => {
 
     try{
         const videos = await Video.find()
-                                    .skip((page - 1) * limit)
-                                    .limit(Number(limit))
-                                    .exec();
+        .skip((page - 1) * limit)
+        .limit(Number(limit))
+        .exec();
 
 
         const totalVideos = await Video.countDocuments();
