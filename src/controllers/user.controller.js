@@ -5,6 +5,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose, { mongo } from "mongoose";
+import sendEmail from "../utils/sendEmail.js";
+import crypto from "crypto";
 
 
 const generateAccessAndRefreshTokens = async ( userId ) => {
@@ -193,6 +195,82 @@ const refreshAccesstoken = asyncHandler( async (req, res) => {
         throw new ApiError(401, error?.message || "Invalid refresh token");
     }
     
+})
+
+const forgotPassword = asyncHandler(async (req, res, next) => {
+    const { email } = req.body;
+
+    if(!email){
+        throw new ApiError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if(!user){
+        throw new ApiError(400, "Email not registered");
+    }
+
+    const resetToken = await user.generatePasswordResetToken();
+
+    await user.save();
+
+    const resetPasswordURL = `${process.env.FRONTEND_URL}/reset/${resetToken}`;
+
+    const subject = "Reset Password Link";
+    const message = `You can reset your password by clicking <a href=${resetPasswordURL} target="_blank" > Reset Your Password </a>.\nIf the above link does not work for some reason then copy paste this link in new tab ${resetPasswordURL}.\nIf you have not requested this, kindly Ignore.\n The Link will be valid for 15 minutes only`;
+
+
+
+    try{
+
+        await sendEmail(email, subject, message);
+        return res.status(200).json(
+            new ApiResponse(200, {}, `Reset Password has been sent to ${email} successfully`)
+        );
+
+    }catch(err){
+        user.forgotPasswordExpiry = undefined;
+        user.forgotPasswordToken = undefined;
+
+        await user.save();
+
+        throw new ApiError(400, err?.message || "Error occurred while sending reset token");
+    }
+})
+
+
+const resetPassword = asyncHandler(async (req, res, next) => {
+    try{
+        const { resetToken } = req.params;
+        const { password } = req.body;
+
+
+        if(!password){
+            throw new ApiError(400, "New Password");
+        }
+
+        const forgotPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+        const user = await User.findOne({
+            forgotPasswordToken,
+            forgotPasswordExpiry : {$gt : Date.now()}
+        });
+
+        if(!user){
+            throw new ApiError(400, "Token is invalid or expired, please try again");
+        }
+
+        user.password = password;
+        user.forgotPasswordExpiry = undefined;
+        user.forgotPasswordToken = undefined;
+        await user.save();
+
+        return res.status(200).json(
+            new ApiResponse(200, {}, "Password changed successfully")
+        );
+    }catch(err){
+        throw new ApiError(400, err?.message || "Error occurred while resetting password");
+    }
 })
 
 const changeCurrentPassword = asyncHandler( async ( req, res ) => {
@@ -452,7 +530,9 @@ export {
     updateUserAvatar,
     updateCoverImage,
     getUserChannelProfile,
-    getWatchHistory
+    getWatchHistory,
+    resetPassword,
+    forgotPassword
 }
 
 
