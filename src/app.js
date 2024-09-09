@@ -10,7 +10,7 @@ app.use(cors({
     credentials : true
 }));
 
-
+app.use(morgan("dev"));
 app.use(express.json({ limit : "16kb" }))
 app.use(express.urlencoded({ extended : true, limit : "16kb"}))
 app.use(express.static("public"));
@@ -24,6 +24,7 @@ import videoRouter from "./routes/video.routes.js";
 import commentRouter from "./routes/comment.routes.js";
 import likeRouter from "./routes/like.routes.js";
 import playlistRouter from "./routes/playlist.routes.js";
+import morgan from "morgan";
 
 // routes declaration
 app.use("/api/v1/users", userRoutes);
